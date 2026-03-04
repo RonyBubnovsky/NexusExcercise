@@ -1,25 +1,24 @@
 // Server entry point.
 // Connects to MongoDB and starts listening on the configured port.
 // The Express app is defined separately in app.js for testability.
+// The DB connection is in config/database.js so it can be swapped easily.
 
-const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = require('./app');
+const connectDB = require('./config/database');
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/coupon-marketplace';
 
 const startServer = async () => {
   try {
-    await mongoose.connect(MONGO_URI);
-    console.log('Connected to MongoDB');
+    await connectDB();
 
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error('Failed to connect to MongoDB:', error.message);
+    console.error('Failed to start server:', error.message);
     process.exit(1);
   }
 };
