@@ -43,9 +43,9 @@ export default function AdminDashboardPage({ token, onLogout }) {
   const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
 
-  // If any API call returns 401, the token is invalid — force logout
+  // If any API call returns 401 or fails to send (e.g. invalid token chars), force logout
   const handleAuthError = useCallback((err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 || !err.response) {
       onLogout();
       return true;
     }
