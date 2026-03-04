@@ -15,6 +15,25 @@ A backend-focused digital marketplace for selling coupon-based products through 
 | Auth             | JWT (admin), Bearer key (reseller)       |
 | Testing          | Jest + Supertest + mongodb-memory-server |
 | Containerization | Docker + Docker Compose                  |
+| CI/CD            | GitHub Actions + Render Deploy Hooks     |
+
+### Live Demo
+
+| Service  | URL                                     |
+| -------- | --------------------------------------- |
+| Frontend | https://nexusexcercise.onrender.com     |
+| Backend  | https://nexus-backend-r8oc.onrender.com |
+
+---
+
+## CI/CD Pipeline
+
+The project uses **GitHub Actions** with two workflows:
+
+| Workflow                                    | Trigger                | What it does                                                 |
+| ------------------------------------------- | ---------------------- | ------------------------------------------------------------ |
+| **CI** (`.github/workflows/ci.yml`)         | Pull request to `main` | Runs server tests (Jest + MongoDB) and verifies client build |
+| **Deploy** (`.github/workflows/deploy.yml`) | PR merged to `main`    | Triggers Render deploy hooks for server and client           |
 
 ---
 
@@ -338,11 +357,12 @@ The React frontend has two modes accessible via the top navigation:
 │   │   ├── middleware/      # adminAuth (JWT), resellerAuth (API key), errorHandler
 │   │   ├── routes/         # adminRoutes, productRoutes, storeRoutes
 │   │   ├── utils/          # AppError class
-│   │   ├── __tests__/      # 8 test suites, 107 tests
+│   │   ├── __tests__/      # 8 test suites, 111 tests
 │   │   ├── app.js          # Express configuration
 │   │   └── index.js        # Server entry point
 │   └── Dockerfile
 ├── docker-compose.yml      # 3 services: mongo, server, client
+├── .github/workflows/      # CI + Deploy GitHub Actions
 ├── .env.example            # Template for environment variables
 └── README.md
 ```
