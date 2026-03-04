@@ -17,7 +17,7 @@ export default function ProductDetailPage() {
     const fetch = async () => {
       try {
         const data = await getProductById(id);
-        setProduct(data.data);
+        setProduct(data.data || data);
       } catch (err) {
         setError(err.response?.data?.message || 'Product not found');
       } finally {
@@ -32,7 +32,7 @@ export default function ProductDetailPage() {
     setError(null);
     try {
       const data = await purchaseProduct(id);
-      setPurchaseResult(data.data);
+      setPurchaseResult(data.data || data);
     } catch (err) {
       setError(err.response?.data?.message || 'Purchase failed');
     } finally {
@@ -80,7 +80,7 @@ export default function ProductDetailPage() {
         <h2>{product.name}</h2>
         <p className="description">{product.description}</p>
         <p className="price">
-          ${Number(product.minimum_sell_price).toFixed(2)}
+          ${Number(product.price).toFixed(2)}
         </p>
 
         {error && <div className="error-msg">{error}</div>}

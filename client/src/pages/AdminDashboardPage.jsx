@@ -25,7 +25,7 @@ export default function AdminDashboardPage({ token, onLogout }) {
   const fetchProducts = async () => {
     try {
       const data = await adminGetAllProducts(token);
-      setProducts(data.data || []);
+      setProducts(Array.isArray(data) ? data : data.data || []);
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load products');
     } finally {

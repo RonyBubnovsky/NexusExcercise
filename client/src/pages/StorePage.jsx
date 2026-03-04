@@ -14,7 +14,7 @@ export default function StorePage() {
     const fetchProducts = async () => {
       try {
         const data = await getAvailableProducts();
-        setProducts(data.data || []);
+        setProducts(Array.isArray(data) ? data : data.data || []);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load products');
       } finally {
@@ -36,8 +36,8 @@ export default function StorePage() {
         <div className="product-grid">
           {products.map((product) => (
             <Link
-              to={`/product/${product._id}`}
-              key={product._id}
+              to={`/product/${product.id}`}
+              key={product.id}
               style={{ textDecoration: 'none', color: 'inherit' }}
             >
               <div className="product-card">
@@ -47,7 +47,7 @@ export default function StorePage() {
                 <h3>{product.name}</h3>
                 <p className="description">{product.description}</p>
                 <p className="price">
-                  ${Number(product.minimum_sell_price).toFixed(2)}
+                  ${Number(product.price).toFixed(2)}
                 </p>
                 <span className="badge badge-available">Available</span>
               </div>
