@@ -5,6 +5,14 @@ A backend-focused digital marketplace for selling coupon-based products through 
 - **Direct customers** – browse and buy coupons through the React frontend
 - **External resellers** – integrate via authenticated REST API
 
+### Authentication
+
+| Channel  | Method         | Details                                                                                                                                                                                   |
+| -------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Admin    | JWT            | Admin logs in with username/password and receives a JWT token                                                                                                                             |
+| Reseller | Bearer API Key | Resellers authenticate with `Authorization: Bearer <RESELLER_API_KEY>`. The key is defined in the `RESELLER_API_KEY` environment variable — this is the Bearer token required by the spec |
+| Store    | None           | Public endpoints, no authentication required                                                                                                                                              |
+
 ## Tech Stack
 
 | Layer            | Technology                               |
