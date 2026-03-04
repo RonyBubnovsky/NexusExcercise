@@ -10,6 +10,7 @@ const helmet = require('helmet');
 const errorHandler = require('./middleware/errorHandler');
 const adminRoutes = require('./routes/adminRoutes');
 const productRoutes = require('./routes/productRoutes');
+const storeRoutes = require('./routes/storeRoutes');
 
 const app = express();
 
@@ -29,8 +30,11 @@ app.get('/api/v1/health', (req, res) => {
 // Admin API – CRUD operations, protected by JWT (except login)
 app.use('/api/v1/admin', adminRoutes);
 
-// Reseller API – public product listing + purchase, protected by API key
+// Reseller API – product listing + purchase, protected by API key
 app.use('/api/v1/products', productRoutes);
+
+// Store API – public endpoints for direct customers (no auth required)
+app.use('/api/v1/store', storeRoutes);
 
 // --- Global Error Handler (must be LAST middleware) ---
 app.use(errorHandler);
