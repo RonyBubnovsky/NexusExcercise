@@ -40,6 +40,8 @@ export default function AdminDashboardPage({ token, onLogout }) {
 
   // Delete modal
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [showDeleteAll, setShowDeleteAll] = useState(false);
+  const [deletingAll, setDeletingAll] = useState(false);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -132,6 +134,24 @@ export default function AdminDashboardPage({ token, onLogout }) {
     }
   };
 
+  // --- Delete All ---
+  const handleDeleteAll = async () => {
+    setShowDeleteAll(false);
+    setDeletingAll(true);
+    clearMessages();
+    let deleted = 0;
+    for (const p of products) {
+      try {
+        await adminDeleteProduct(token, p._id);
+        deleted++;
+      } catch (_) { /* skip failed */ }
+    }
+    setDeletingAll(false);
+    setSuccessMsg(`Deleted ${deleted} of ${products.length} coupons.`);
+    setLoading(true);
+    await fetchProducts();
+  };
+
   const clearMessages = () => { setError(null); setSuccessMsg(null); };
 
   return (
@@ -171,7 +191,18 @@ export default function AdminDashboardPage({ token, onLogout }) {
       )}
 
       {/* --- Coupon List --- */}
-      <h2 style={{ marginBottom: 'var(--space-4)' }}>All Coupons ({products.length})</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-4)' }}>
+        <h2>All Coupons ({products.length})</h2>
+        {products.length > 0 && (
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => setShowDeleteAll(true)}
+            disabled={deletingAll}
+          >
+            {deletingAll ? 'Deleting…' : 'Delete All'}
+          </button>
+        )}
+      </div>
 
       {loading ? (
         <Loader text="Loading coupons…" />
@@ -200,6 +231,16 @@ export default function AdminDashboardPage({ token, onLogout }) {
         danger
         onCancel={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
+      />
+
+      <ConfirmModal
+        isOpen={showDeleteAll}
+        title="Delete All Coupons"
+        message={`This will permanently delete all ${products.length} coupons. Are you sure?`}
+        confirmText="Delete All"
+        danger
+        onCancel={() => setShowDeleteAll(false)}
+        onConfirm={handleDeleteAll}
       />
     </div>
   );

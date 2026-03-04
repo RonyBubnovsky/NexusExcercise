@@ -23,7 +23,15 @@ export default function CouponForm({ values, onChange, onSubmit, submitting, sub
       </FormField>
 
       <FormField label="Image URL">
-        <input value={values.image_url} onChange={set('image_url')} placeholder="https://…" required />
+        <input
+          type="url"
+          value={values.image_url}
+          onChange={set('image_url')}
+          placeholder="https://…"
+          pattern="https://.*"
+          title="Must start with https://"
+          required
+        />
       </FormField>
 
       <div className="form-row form-row-2">

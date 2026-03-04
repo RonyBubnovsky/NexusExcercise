@@ -108,6 +108,27 @@ describe('POST /api/v1/admin/products – validation', () => {
     expect(res.body.message).toMatch(/value_type/);
   });
 
+  it('should reject image_url without https prefix', async () => {
+    const res = await request(app)
+      .post('/api/v1/admin/products')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ ...validCoupon(), image_url: 'http://example.com/img.png' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+    expect(res.body.message).toMatch(/image_url.*HTTPS/i);
+  });
+
+  it('should reject non-URL image_url', async () => {
+    const res = await request(app)
+      .post('/api/v1/admin/products')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ ...validCoupon(), image_url: 'not-a-url' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+  });
+
   it('should accept valid coupon data', async () => {
     const res = await request(app)
       .post('/api/v1/admin/products')
@@ -163,6 +184,17 @@ describe('PUT /api/v1/admin/products/:id – validation', () => {
 
     expect(res.status).toBe(400);
     expect(res.body.error_code).toBe('VALIDATION_ERROR');
+  });
+
+  it('should reject image_url without https on update', async () => {
+    const res = await request(app)
+      .put(`/api/v1/admin/products/${couponId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ image_url: 'http://example.com/img.png' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.error_code).toBe('VALIDATION_ERROR');
+    expect(res.body.message).toMatch(/image_url.*HTTPS/i);
   });
 
   it('should accept valid update', async () => {

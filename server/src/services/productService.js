@@ -35,6 +35,11 @@ const createCoupon = async (data) => {
     throw new AppError('margin_percentage must be a non-negative number', 400, 'VALIDATION_ERROR');
   }
 
+  // Validate image_url is a valid HTTPS URL
+  if (typeof data.image_url !== 'string' || !data.image_url.startsWith('https://')) {
+    throw new AppError('image_url must be a valid HTTPS URL', 400, 'VALIDATION_ERROR');
+  }
+
   // Validate value_type enum
   if (!['STRING', 'IMAGE'].includes(data.value_type)) {
     throw new AppError('value_type must be STRING or IMAGE', 400, 'VALIDATION_ERROR');
@@ -85,6 +90,11 @@ const updateCoupon = async (id, updateData) => {
   if (updateData.margin_percentage !== undefined) {
     if (typeof updateData.margin_percentage !== 'number' || updateData.margin_percentage < 0) {
       throw new AppError('margin_percentage must be a non-negative number', 400, 'VALIDATION_ERROR');
+    }
+  }
+  if (updateData.image_url !== undefined) {
+    if (typeof updateData.image_url !== 'string' || !updateData.image_url.startsWith('https://')) {
+      throw new AppError('image_url must be a valid HTTPS URL', 400, 'VALIDATION_ERROR');
     }
   }
   if (updateData.value_type !== undefined && !['STRING', 'IMAGE'].includes(updateData.value_type)) {
