@@ -1,0 +1,19 @@
+name: Deploy to Render
+
+on:
+  pull_request:
+    branches: [main]
+    types: [closed]
+
+jobs:
+  deploy:
+    name: Trigger Render Deploy
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Server
+        run: curl -s "${{ secrets.RENDER_SERVER_DEPLOY_HOOK }}"
+
+      - name: Deploy Client
+        run: curl -s "${{ secrets.RENDER_CLIENT_DEPLOY_HOOK }}"
