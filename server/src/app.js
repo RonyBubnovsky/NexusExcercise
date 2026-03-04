@@ -1,0 +1,41 @@
+// Express app configuration.
+// This file creates and configures the Express app WITHOUT starting
+// the server or connecting to MongoDB. This separation is important
+// because it allows tests (Supertest) to import the app directly
+// without needing a running database or server.
+
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const errorHandler = require('./middleware/errorHandler');
+const adminRoutes = require('./routes/adminRoutes');
+const productRoutes = require('./routes/productRoutes');
+const storeRoutes = require('./routes/storeRoutes');
+
+const app = express();
+
+// --- Middleware ---
+app.use(helmet());         // Security headers
+app.use(cors());           // Allow cross-origin requests from the frontend
+app.use(express.json());   // Parse JSON request bodies
+
+// --- Routes ---
+
+// Health check endpoint – verifies the server is running
+app.get('/api/v1/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+// Admin API – CRUD operations, protected by JWT (except login)
+app.use('/api/v1/admin', adminRoutes);
+
+// Reseller API – product listing + purchase, protected by API key
+app.use('/api/v1/products', productRoutes);
+
+// Store API – public endpoints for direct customers (no auth required)
+app.use('/api/v1/store', storeRoutes);
+
+// --- Global Error Handler (must be LAST middleware) ---
+app.use(errorHandler);
+
+module.exports = app;

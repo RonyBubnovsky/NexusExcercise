@@ -1,0 +1,37 @@
+services:
+  # --- MongoDB ---
+  mongo:
+    image: mongo:7
+    container_name: coupon-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  # --- Backend (Express) ---
+  server:
+    build: ./server
+    container_name: coupon-server
+    ports:
+      - "${PORT:-5000}:${PORT:-5000}"
+    environment:
+      - PORT=${PORT:-5000}
+      - MONGO_URI=mongodb://mongo:27017/coupon-marketplace
+      - JWT_SECRET=${JWT_SECRET}
+      - RESELLER_API_KEY=${RESELLER_API_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    depends_on:
+      - mongo
+
+  # --- Frontend (React + Vite) ---
+  client:
+    build: ./client
+    container_name: coupon-client
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+
+volumes:
+  mongo-data:
