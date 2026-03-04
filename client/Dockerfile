@@ -9,6 +9,10 @@ RUN npm install
 
 COPY . .
 
+# Accept VITE_API_URL at build time (Render passes ENV vars as build args)
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
 RUN npm run build
 
 # Production stage – serve with a lightweight static server
