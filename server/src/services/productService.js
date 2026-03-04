@@ -15,6 +15,31 @@ const AppError = require('../utils/AppError');
 // minimum_sell_price is calculated automatically by the model (pre-save hook).
 // Pricing fields (cost_price, margin_percentage) are accepted ONLY through the admin API.
 const createCoupon = async (data) => {
+  // Validate required fields before hitting the database
+  const required = ['name', 'description', 'image_url', 'cost_price', 'margin_percentage', 'value_type', 'value'];
+  const missing = required.filter((f) => data[f] === undefined || data[f] === null || data[f] === '');
+
+  if (missing.length > 0) {
+    throw new AppError(
+      `Missing required fields: ${missing.join(', ')}`,
+      400,
+      'VALIDATION_ERROR'
+    );
+  }
+
+  // Validate numeric fields
+  if (typeof data.cost_price !== 'number' || data.cost_price < 0) {
+    throw new AppError('cost_price must be a non-negative number', 400, 'VALIDATION_ERROR');
+  }
+  if (typeof data.margin_percentage !== 'number' || data.margin_percentage < 0) {
+    throw new AppError('margin_percentage must be a non-negative number', 400, 'VALIDATION_ERROR');
+  }
+
+  // Validate value_type enum
+  if (!['STRING', 'IMAGE'].includes(data.value_type)) {
+    throw new AppError('value_type must be STRING or IMAGE', 400, 'VALIDATION_ERROR');
+  }
+
   return productRepository.create(data);
 };
 
@@ -39,6 +64,21 @@ const getCouponById = async (id) => {
 // --- Update a coupon (Admin) ---
 // Admin can update any fields. Throws PRODUCT_NOT_FOUND if the coupon doesn't exist.
 const updateCoupon = async (id, updateData) => {
+  // Validate numeric fields if provided
+  if (updateData.cost_price !== undefined) {
+    if (typeof updateData.cost_price !== 'number' || updateData.cost_price < 0) {
+      throw new AppError('cost_price must be a non-negative number', 400, 'VALIDATION_ERROR');
+    }
+  }
+  if (updateData.margin_percentage !== undefined) {
+    if (typeof updateData.margin_percentage !== 'number' || updateData.margin_percentage < 0) {
+      throw new AppError('margin_percentage must be a non-negative number', 400, 'VALIDATION_ERROR');
+    }
+  }
+  if (updateData.value_type !== undefined && !['STRING', 'IMAGE'].includes(updateData.value_type)) {
+    throw new AppError('value_type must be STRING or IMAGE', 400, 'VALIDATION_ERROR');
+  }
+
   const updated = await productRepository.update(id, updateData);
 
   if (!updated) {

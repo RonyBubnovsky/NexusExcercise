@@ -36,7 +36,15 @@ const fakeCoupon = (overrides = {}) => ({
 
 describe('Admin - createCoupon', () => {
   it('should call repository.create and return the result', async () => {
-    const data = { name: 'Test' };
+    const data = {
+      name: 'Test',
+      description: 'A test coupon',
+      image_url: 'https://example.com/img.png',
+      cost_price: 80,
+      margin_percentage: 25,
+      value_type: 'STRING',
+      value: 'CODE-123',
+    };
     const created = fakeCoupon();
     productRepository.create.mockResolvedValue(created);
 
@@ -44,6 +52,24 @@ describe('Admin - createCoupon', () => {
 
     expect(productRepository.create).toHaveBeenCalledWith(data);
     expect(result).toEqual(created);
+  });
+
+  it('should throw VALIDATION_ERROR when required fields are missing', async () => {
+    await expect(productService.createCoupon({ name: 'Incomplete' }))
+      .rejects.toThrow(AppError);
+
+    try {
+      await productService.createCoupon({ name: 'Incomplete' });
+    } catch (err) {
+      expect(err.statusCode).toBe(400);
+      expect(err.errorCode).toBe('VALIDATION_ERROR');
+    }
+  });
+
+  it('should throw VALIDATION_ERROR for negative cost_price', async () => {
+    const data = { ...fakeCoupon(), cost_price: -10 };
+    await expect(productService.createCoupon(data))
+      .rejects.toThrow(AppError);
   });
 });
 

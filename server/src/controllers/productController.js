@@ -45,6 +45,22 @@ const getProductById = async (req, res, next) => {
 const purchaseProduct = async (req, res, next) => {
   try {
     const { reseller_price } = req.body;
+
+    // Reseller must provide a price
+    if (reseller_price === undefined || reseller_price === null) {
+      return res.status(400).json({
+        error_code: 'VALIDATION_ERROR',
+        message: 'reseller_price is required',
+      });
+    }
+
+    if (typeof reseller_price !== 'number' || reseller_price < 0) {
+      return res.status(400).json({
+        error_code: 'VALIDATION_ERROR',
+        message: 'reseller_price must be a non-negative number',
+      });
+    }
+
     const result = await productService.purchaseProduct(req.params.id, reseller_price);
     res.json(result);
   } catch (error) {

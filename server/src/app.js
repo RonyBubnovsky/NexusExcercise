@@ -24,7 +24,6 @@ app.use(express.json());   // Parse JSON request bodies
 // Health check endpoint – verifies the server is running
 app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok' });
-  console.log('Health check endpoint hit');
 });
 
 // Admin API – CRUD operations, protected by JWT (except login)
