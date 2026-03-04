@@ -1,52 +1,25 @@
-// App – root component with navigation between Customer and Admin modes.
-// Uses React Router for page routing.
+// App – root component with routing between Store and Admin modes.
 
-import { useState } from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import NavBar from './components/layout/NavBar';
+import useAuth from './hooks/useAuth';
 
-import StorePage from './pages/StorePage';
-import ProductDetailPage from './pages/ProductDetailPage';
-import AdminLoginPage from './pages/AdminLoginPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-
-function NavBar() {
-  const location = useLocation();
-  const isAdmin = location.pathname.startsWith('/admin');
-
-  return (
-    <nav className="nav">
-      <Link to="/">
-        <button className={!isAdmin ? 'active' : ''}>Store</button>
-      </Link>
-      <Link to="/admin">
-        <button className={isAdmin ? 'active' : ''}>Admin</button>
-      </Link>
-    </nav>
-  );
-}
+import StorePage from './pages/store/StorePage';
+import ProductDetailPage from './pages/store/ProductDetailPage';
+import AdminLoginPage from './pages/admin/AdminLoginPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 
 function AdminSection() {
-  const [token, setToken] = useState(localStorage.getItem('adminToken'));
-
-  const handleLogin = (jwt) => {
-    localStorage.setItem('adminToken', jwt);
-    setToken(jwt);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('adminToken');
-    setToken(null);
-  };
+  const { token, login, logout } = useAuth();
 
   if (!token) {
-    return <AdminLoginPage onLogin={handleLogin} />;
+    return <AdminLoginPage onLogin={login} />;
   }
 
-  return <AdminDashboardPage token={token} onLogout={handleLogout} />;
+  return <AdminDashboardPage token={token} onLogout={logout} />;
 }
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <div className="app">
@@ -60,5 +33,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;
