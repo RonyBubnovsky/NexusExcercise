@@ -64,8 +64,16 @@ export default function CouponForm({ values, onChange, onSubmit, submitting, sub
             <option value="IMAGE">IMAGE</option>
           </select>
         </FormField>
-        <FormField label="Coupon Value / URL">
-          <input value={values.value} onChange={set('value')} required />
+        <FormField label={values.value_type === 'IMAGE' ? 'Coupon Image URL' : 'Coupon Value'}>
+          <input
+            type={values.value_type === 'IMAGE' ? 'url' : 'text'}
+            value={values.value}
+            onChange={set('value')}
+            placeholder={values.value_type === 'IMAGE' ? 'https://…' : 'ABCD-1234'}
+            pattern={values.value_type === 'IMAGE' ? 'https://.*' : undefined}
+            title={values.value_type === 'IMAGE' ? 'Must start with https://' : undefined}
+            required
+          />
         </FormField>
       </div>
 

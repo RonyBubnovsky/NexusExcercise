@@ -45,6 +45,11 @@ const createCoupon = async (data) => {
     throw new AppError('value_type must be STRING or IMAGE', 400, 'VALIDATION_ERROR');
   }
 
+  // Validate coupon value URL when type is IMAGE
+  if (data.value_type === 'IMAGE' && !data.value.startsWith('https://')) {
+    throw new AppError('Coupon value must be a valid HTTPS URL when value_type is IMAGE', 400, 'VALIDATION_ERROR');
+  }
+
   return productRepository.create(data);
 };
 
@@ -99,6 +104,19 @@ const updateCoupon = async (id, updateData) => {
   }
   if (updateData.value_type !== undefined && !['STRING', 'IMAGE'].includes(updateData.value_type)) {
     throw new AppError('value_type must be STRING or IMAGE', 400, 'VALIDATION_ERROR');
+  }
+
+  // Validate coupon value URL when type is IMAGE
+  // Check both: explicit value_type in update, or existing value_type on the coupon
+  const effectiveValueType = updateData.value_type || existing.value_type;
+  if (updateData.value !== undefined && effectiveValueType === 'IMAGE' && !updateData.value.startsWith('https://')) {
+    throw new AppError('Coupon value must be a valid HTTPS URL when value_type is IMAGE', 400, 'VALIDATION_ERROR');
+  }
+  if (updateData.value_type === 'IMAGE' && !updateData.value) {
+    // Switching to IMAGE but not changing value — validate existing value
+    if (!existing.value.startsWith('https://')) {
+      throw new AppError('Coupon value must be a valid HTTPS URL when value_type is IMAGE', 400, 'VALIDATION_ERROR');
+    }
   }
 
   const updated = await productRepository.update(id, updateData);
