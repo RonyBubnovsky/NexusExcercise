@@ -43,16 +43,27 @@ export default function AdminDashboardPage({ token, onLogout }) {
   const [showDeleteAll, setShowDeleteAll] = useState(false);
   const [deletingAll, setDeletingAll] = useState(false);
 
+  // If any API call returns 401, the token is invalid — force logout
+  const handleAuthError = useCallback((err) => {
+    if (err.response?.status === 401) {
+      onLogout();
+      return true;
+    }
+    return false;
+  }, [onLogout]);
+
   const fetchProducts = useCallback(async () => {
     try {
       const data = await adminGetAllProducts(token);
       setProducts(Array.isArray(data) ? data : data.data || []);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load products');
+      if (!handleAuthError(err)) {
+        setError(err.response?.data?.message || 'Failed to load products');
+      }
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, handleAuthError]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
@@ -76,7 +87,9 @@ export default function AdminDashboardPage({ token, onLogout }) {
       setLoading(true);
       await fetchProducts();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create coupon');
+      if (!handleAuthError(err)) {
+        setError(err.response?.data?.message || 'Failed to create coupon');
+      }
     } finally {
       setCreating(false);
     }
@@ -115,7 +128,9 @@ export default function AdminDashboardPage({ token, onLogout }) {
       setLoading(true);
       await fetchProducts();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update coupon');
+      if (!handleAuthError(err)) {
+        setError(err.response?.data?.message || 'Failed to update coupon');
+      }
     }
   };
 
@@ -130,7 +145,9 @@ export default function AdminDashboardPage({ token, onLogout }) {
       setLoading(true);
       await fetchProducts();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete coupon');
+      if (!handleAuthError(err)) {
+        setError(err.response?.data?.message || 'Failed to delete coupon');
+      }
     }
   };
 
@@ -144,7 +161,9 @@ export default function AdminDashboardPage({ token, onLogout }) {
       try {
         await adminDeleteProduct(token, p._id);
         deleted++;
-      } catch (_) { /* skip failed */ }
+      } catch (err) {
+        if (handleAuthError(err)) return;
+      }
     }
     setDeletingAll(false);
     setSuccessMsg(`Deleted ${deleted} of ${products.length} coupons.`);
