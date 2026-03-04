@@ -2,7 +2,12 @@
 // Requires a valid JWT token passed as prop.
 
 import { useEffect, useState } from 'react';
-import { adminGetAllProducts, adminCreateProduct } from '../services/api';
+import {
+  adminGetAllProducts,
+  adminCreateProduct,
+  adminUpdateProduct,
+  adminDeleteProduct,
+} from '../services/api';
 
 const EMPTY_FORM = {
   name: '',
@@ -21,6 +26,8 @@ export default function AdminDashboardPage({ token, onLogout }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [creating, setCreating] = useState(false);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState(EMPTY_FORM);
 
   const fetchProducts = async () => {
     try {
@@ -141,6 +148,74 @@ export default function AdminDashboardPage({ token, onLogout }) {
         </form>
       </div>
 
+      {/* --- Edit Modal --- */}
+      {editingId && (
+        <div className="admin-form" style={{ border: '2px solid #4a90d9' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>Edit Coupon</h2>
+            <button className="btn" onClick={() => setEditingId(null)}>Cancel</button>
+          </div>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            setError(null);
+            try {
+              const payload = {};
+              if (editForm.name) payload.name = editForm.name;
+              if (editForm.description) payload.description = editForm.description;
+              if (editForm.image_url) payload.image_url = editForm.image_url;
+              if (editForm.cost_price !== '') payload.cost_price = Number(editForm.cost_price);
+              if (editForm.margin_percentage !== '') payload.margin_percentage = Number(editForm.margin_percentage);
+              if (editForm.value_type) payload.value_type = editForm.value_type;
+              if (editForm.value) payload.value = editForm.value;
+              await adminUpdateProduct(token, editingId, payload);
+              setEditingId(null);
+              setSuccessMsg('Coupon updated successfully!');
+              setLoading(true);
+              await fetchProducts();
+            } catch (err) {
+              setError(err.response?.data?.message || 'Failed to update coupon');
+            }
+          }}>
+            <div className="form-group">
+              <label>Name</label>
+              <input name="name" value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Description</label>
+              <textarea name="description" value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Image URL</label>
+              <input name="image_url" value={editForm.image_url} onChange={(e) => setEditForm({ ...editForm, image_url: e.target.value })} />
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="form-group">
+                <label>Cost Price ($)</label>
+                <input name="cost_price" type="number" step="0.01" min="0" value={editForm.cost_price} onChange={(e) => setEditForm({ ...editForm, cost_price: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Margin (%)</label>
+                <input name="margin_percentage" type="number" step="0.01" min="0" value={editForm.margin_percentage} onChange={(e) => setEditForm({ ...editForm, margin_percentage: e.target.value })} />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 12 }}>
+              <div className="form-group">
+                <label>Value Type</label>
+                <select name="value_type" value={editForm.value_type} onChange={(e) => setEditForm({ ...editForm, value_type: e.target.value })}>
+                  <option value="STRING">STRING</option>
+                  <option value="IMAGE">IMAGE</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Coupon Value / URL</label>
+                <input name="value" value={editForm.value} onChange={(e) => setEditForm({ ...editForm, value: e.target.value })} />
+              </div>
+            </div>
+            <button className="btn btn-primary" type="submit">Save Changes</button>
+          </form>
+        </div>
+      )}
+
       {/* --- Product list --- */}
       <h2>All Coupons ({products.length})</h2>
       {loading ? (
@@ -161,6 +236,47 @@ export default function AdminDashboardPage({ token, onLogout }) {
               <span className={`badge ${p.is_sold ? 'badge-sold' : 'badge-available'}`}>
                 {p.is_sold ? 'Sold' : 'Available'}
               </span>
+              <div style={{ marginTop: 10, display: 'flex', gap: 8 }}>
+                {!p.is_sold && (
+                  <button
+                    className="btn btn-primary"
+                    style={{ fontSize: 12, padding: '6px 12px' }}
+                    onClick={() => {
+                      setEditingId(p._id);
+                      setEditForm({
+                        name: p.name || '',
+                        description: p.description || '',
+                        image_url: p.image_url || '',
+                        cost_price: p.cost_price ?? '',
+                        margin_percentage: p.margin_percentage ?? '',
+                        value_type: p.value_type || 'STRING',
+                        value: p.value || '',
+                      });
+                      setSuccessMsg(null);
+                      setError(null);
+                    }}
+                  >
+                    Edit
+                  </button>
+                )}
+                <button
+                  className="btn btn-danger"
+                  style={{ fontSize: 12, padding: '6px 12px' }}
+                  onClick={async () => {
+                    if (!window.confirm(`Delete "${p.name}"?`)) return;
+                    try {
+                      await adminDeleteProduct(token, p._id);
+                      setSuccessMsg('Coupon deleted successfully!');
+                      setLoading(true);
+                      await fetchProducts();
+                    } catch (err) {
+                      setError(err.response?.data?.message || 'Failed to delete coupon');
+                    }
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

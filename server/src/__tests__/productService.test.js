@@ -111,7 +111,9 @@ describe('Admin - getCouponById', () => {
 
 describe('Admin - updateCoupon', () => {
   it('should return the updated coupon', async () => {
+    const existing = fakeCoupon({ is_sold: false });
     const updated = fakeCoupon({ name: 'Updated' });
+    productRepository.findById.mockResolvedValue(existing);
     productRepository.update.mockResolvedValue(updated);
 
     const result = await productService.updateCoupon('test-uuid-123', { name: 'Updated' });
@@ -120,11 +122,20 @@ describe('Admin - updateCoupon', () => {
   });
 
   it('should throw PRODUCT_NOT_FOUND if coupon does not exist', async () => {
-    productRepository.update.mockResolvedValue(null);
+    productRepository.findById.mockResolvedValue(null);
 
     await expect(productService.updateCoupon('bad-id', { name: 'X' }))
       .rejects
       .toMatchObject({ statusCode: 404, errorCode: 'PRODUCT_NOT_FOUND' });
+  });
+
+  it('should throw PRODUCT_ALREADY_SOLD if coupon is sold', async () => {
+    const sold = fakeCoupon({ is_sold: true });
+    productRepository.findById.mockResolvedValue(sold);
+
+    await expect(productService.updateCoupon('test-uuid-123', { name: 'X' }))
+      .rejects
+      .toMatchObject({ statusCode: 400, errorCode: 'PRODUCT_ALREADY_SOLD' });
   });
 });
 

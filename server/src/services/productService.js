@@ -63,7 +63,19 @@ const getCouponById = async (id) => {
 
 // --- Update a coupon (Admin) ---
 // Admin can update any fields. Throws PRODUCT_NOT_FOUND if the coupon doesn't exist.
+// Sold coupons cannot be edited.
 const updateCoupon = async (id, updateData) => {
+  // Check if the coupon exists and is not sold
+  const existing = await productRepository.findById(id);
+
+  if (!existing) {
+    throw new AppError('Product not found', 404, 'PRODUCT_NOT_FOUND');
+  }
+
+  if (existing.is_sold) {
+    throw new AppError('Cannot edit a coupon that has already been sold', 400, 'PRODUCT_ALREADY_SOLD');
+  }
+
   // Validate numeric fields if provided
   if (updateData.cost_price !== undefined) {
     if (typeof updateData.cost_price !== 'number' || updateData.cost_price < 0) {
@@ -80,10 +92,6 @@ const updateCoupon = async (id, updateData) => {
   }
 
   const updated = await productRepository.update(id, updateData);
-
-  if (!updated) {
-    throw new AppError('Product not found', 404, 'PRODUCT_NOT_FOUND');
-  }
 
   return updated;
 };

@@ -188,7 +188,9 @@ describe('GET /api/v1/admin/products/:id', () => {
 describe('PUT /api/v1/admin/products/:id', () => {
   it('should update and return the updated coupon', async () => {
     const token = await getAdminToken();
+    const existing = fakeCoupon({ is_sold: false });
     const updated = fakeCoupon({ name: 'Updated Name', cost_price: 100, margin_percentage: 50, minimum_sell_price: 150 });
+    productRepository.findById.mockResolvedValue(existing);
     productRepository.update.mockResolvedValue(updated);
 
     const res = await request(app)
@@ -203,7 +205,7 @@ describe('PUT /api/v1/admin/products/:id', () => {
 
   it('should return 404 when coupon not found', async () => {
     const token = await getAdminToken();
-    productRepository.update.mockResolvedValue(null);
+    productRepository.findById.mockResolvedValue(null);
 
     const res = await request(app)
       .put('/api/v1/admin/products/bad-id')

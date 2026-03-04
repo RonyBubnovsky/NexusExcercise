@@ -57,4 +57,20 @@ export const adminCreateProduct = async (token, productData) => {
   return response.data;
 };
 
+// Update a coupon – admin only
+export const adminUpdateProduct = async (token, id, updateData) => {
+  const response = await api.put(`/admin/products/${id}`, updateData, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
+// Delete a coupon – admin only
+export const adminDeleteProduct = async (token, id) => {
+  const response = await api.delete(`/admin/products/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return response.data;
+};
+
 export default api;
