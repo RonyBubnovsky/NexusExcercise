@@ -8,6 +8,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const errorHandler = require('./middleware/errorHandler');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
@@ -22,6 +23,9 @@ app.use(express.json());   // Parse JSON request bodies
 app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'ok' });
 });
+
+// Admin API – CRUD operations, protected by JWT (except login)
+app.use('/api/v1/admin', adminRoutes);
 
 // --- Global Error Handler (must be LAST middleware) ---
 app.use(errorHandler);

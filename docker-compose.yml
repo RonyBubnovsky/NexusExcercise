@@ -21,6 +21,8 @@ services:
       - MONGO_URI=mongodb://mongo:27017/coupon-marketplace
       - JWT_SECRET=${JWT_SECRET}
       - RESELLER_API_KEY=${RESELLER_API_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     depends_on:
       - mongo
 
