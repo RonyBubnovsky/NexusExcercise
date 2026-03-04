@@ -8,6 +8,7 @@ import {
   adminUpdateProduct,
   adminDeleteProduct,
 } from '../services/api';
+import ConfirmModal from '../components/ConfirmModal';
 
 const EMPTY_FORM = {
   name: '',
@@ -28,6 +29,7 @@ export default function AdminDashboardPage({ token, onLogout }) {
   const [successMsg, setSuccessMsg] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState(EMPTY_FORM);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchProducts = async () => {
     try {
@@ -100,8 +102,8 @@ export default function AdminDashboardPage({ token, onLogout }) {
             <textarea name="description" value={form.description} onChange={handleChange} />
           </div>
           <div className="form-group">
-            <label>Image URL (optional)</label>
-            <input name="image_url" value={form.image_url} onChange={handleChange} />
+            <label>Image URL </label>
+            <input name="image_url" value={form.image_url} onChange={handleChange} required />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="form-group">
@@ -262,17 +264,7 @@ export default function AdminDashboardPage({ token, onLogout }) {
                 <button
                   className="btn btn-danger"
                   style={{ fontSize: 12, padding: '6px 12px' }}
-                  onClick={async () => {
-                    if (!window.confirm(`Delete "${p.name}"?`)) return;
-                    try {
-                      await adminDeleteProduct(token, p._id);
-                      setSuccessMsg('Coupon deleted successfully!');
-                      setLoading(true);
-                      await fetchProducts();
-                    } catch (err) {
-                      setError(err.response?.data?.message || 'Failed to delete coupon');
-                    }
-                  }}
+                  onClick={() => setDeleteTarget(p)}
                 >
                   Delete
                 </button>
@@ -281,6 +273,27 @@ export default function AdminDashboardPage({ token, onLogout }) {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={deleteTarget !== null}
+        title="Delete Coupon"
+        message={deleteTarget ? `Are you sure you want to delete "${deleteTarget.name}"? This action cannot be undone.` : ''}
+        confirmText="Delete"
+        danger
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={async () => {
+          const id = deleteTarget._id;
+          setDeleteTarget(null);
+          try {
+            await adminDeleteProduct(token, id);
+            setSuccessMsg('Coupon deleted successfully!');
+            setLoading(true);
+            await fetchProducts();
+          } catch (err) {
+            setError(err.response?.data?.message || 'Failed to delete coupon');
+          }
+        }}
+      />
     </div>
   );
 }
